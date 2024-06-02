@@ -1,0 +1,63 @@
+{
+  "name": "boxdbot",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "rollup -c",
+    "typecheck": "tsc --noEmit",
+    "deploy": "firebase deploy --only functions --force"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@google-cloud/functions-framework": "^3.4.0",
+    "@koa/bodyparser": "^5.1.1",
+    "@koa/router": "^12.0.1",
+    "date-fns": "^3.6.0",
+    "discord-api-types": "^0.37.86",
+    "discord-interactions": "^3.4.0",
+    "dotenv": "^16.4.5",
+    "firebase-admin": "^12.1.1",
+    "firebase-functions": "^5.0.1",
+    "hast-util-from-html": "^2.0.1",
+    "hast-util-to-mdast": "^10.1.0",
+    "ix": "^6.0.0",
+    "koa": "^2.15.3",
+    "koa-compose": "^4.1.0",
+    "koa-mount": "^4.0.0",
+    "koa-router": "^12.0.1",
+    "lodash.debounce": "^4.0.8",
+    "mdast-util-to-markdown": "^2.1.0",
+    "p-retry": "^6.2.0",
+    "p-throttle": "^6.1.0",
+    "ramda": "^0.30.0",
+    "unist-util-visit": "^5.0.0",
+    "xml-reader": "^2.4.3",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^25.0.8",
+    "@rollup/plugin-json": "^6.1.0",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-swc": "^0.3.0",
+    "@swc/core": "^1.5.24",
+    "@tsconfig/node20": "^20.1.4",
+    "@types/koa": "^2.15.0",
+    "@types/koa-compose": "^3.2.8",
+    "@types/koa-mount": "^4.0.5",
+    "@types/koa__router": "^12.0.4",
+    "@types/lodash.debounce": "^4.0.9",
+    "@types/node": "20.13.0",
+    "@types/ramda": "^0.30.0",
+    "firebase-tools": "^13.10.2",
+    "prettier": "^3.2.5",
+    "rollup": "^4.18.0",
+    "typescript": "^5.4.5"
+  },
+  "engines": {
+    "node": "20"
+  }
+}
