@@ -188,6 +188,9 @@ export function usePostReviews({
         filter((item): item is NonNullable<typeof item> => item !== null),
         flatMap((item) =>
           parseReviews(item.feed).pipe(
+            item.user.filterTag
+              ? filter((review) => review.tags.includes(item.user.filterTag!))
+              : filter(() => true),
             map((review) => ({ review, user: item.user })),
           ),
         ),
