@@ -36,7 +36,7 @@ app.post("/discord/install", async (c) => {
     discordClient: ctx.discordClient,
     userService: ctx.userService,
     guildConfigs: ctx.guildConfigRepo,
-    appId: c.env.DISCORD_APP_ID as string,
+    appId: c.env.DISCORD_APP_ID,
   });
   await installCommands();
   return c.text("Done");
@@ -51,7 +51,7 @@ app.post("/discord/webhook/interactions", async (c) => {
     body,
     signature ?? null,
     timestamp ?? null,
-    c.env.DISCORD_PUBLIC_KEY as string
+    c.env.DISCORD_PUBLIC_KEY
   );
 
   if (!isValid) {
