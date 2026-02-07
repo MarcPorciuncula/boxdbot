@@ -1,6 +1,0 @@
-{
-  "functions": {
-    "source": ".",
-    "ignore": ["src", "node_modules", ".git"]
-  }
-}

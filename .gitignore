@@ -131,3 +131,6 @@ dist
 
 secret/
 .vscode/
+worker-configuration.d.ts
+.dev.vars
+.wrangler

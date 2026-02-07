@@ -1,90 +1,65 @@
-import {
-  FirestoreDataConverter,
-  Timestamp,
-  getFirestore,
-} from "firebase-admin/firestore"
+import { ensureTable } from "../db/init";
+import { getDocument, setDocument, query } from "../db/repository";
 
 export type UserRegistration = {
-  letterboxdUsername: string
-  discordUserId: string
-  discordGuildId: string
-  createdAt: Date
-}
+  letterboxdUsername: string;
+  discordUserId: string;
+  discordGuildId: string;
+  createdAt: Date;
+};
 
-export function useUserRepository({ firestore = getFirestore() } = {}) {
+export type UserRepository = Awaited<ReturnType<typeof useUserRepository>>;
+
+export async function useUserRepository({ db }: { db: D1Database }) {
+  await ensureTable(db, "user_registrations", {
+    columns: [
+      { name: "guild_id", type: "TEXT" },
+      { name: "user_id", type: "TEXT" },
+      { name: "letterboxd_username", type: "TEXT" },
+      { name: "value", type: "TEXT", notNull: true },
+    ],
+    primaryKey: ["guild_id", "user_id"],
+    indexes: [
+      "CREATE INDEX IF NOT EXISTS idx_user_registrations_guild_username ON user_registrations (guild_id, letterboxd_username)",
+    ],
+  });
+
   async function save(init: Omit<UserRegistration, "createdAt">) {
-    const ref = firestore
-      .collection("guilds")
-      .doc(init.discordGuildId)
-      .collection("user-registrations")
-      .withConverter(converter)
-      .doc(init.discordUserId)
-
-    const doc = {
+    const doc: UserRegistration = {
       ...init,
       createdAt: new Date(),
-    }
+    };
 
-    await ref.set(doc)
+    await setDocument(
+      db,
+      "user_registrations",
+      { guild_id: doc.discordGuildId, user_id: doc.discordUserId },
+      doc,
+      { letterboxd_username: doc.letterboxdUsername }
+    );
 
-    return doc
+    return doc;
   }
 
   async function get(guildId: string, userId: string) {
-    const ref = firestore
-      .collection("guilds")
-      .doc(guildId)
-      .collection("user-registrations")
-      .doc(userId)
-      .withConverter(converter)
-
-    const snapshot = await ref.get()
-
-    return snapshot.data() ?? null
+    return await getDocument<UserRegistration>(db, "user_registrations", {
+      guild_id: guildId,
+      user_id: userId,
+    });
   }
 
   async function listForLetterboxdUsername(guildId: string, username: string) {
-    const ref = firestore
-      .collection("guilds")
-      .doc(guildId)
-      .collection("user-registrations")
-      .where("letterboxdUsername", "==", username)
-      .withConverter(converter)
-
-    const snapshot = await ref.get()
-
-    return snapshot.docs.map((doc) => doc.data())
+    return await query<UserRegistration>(db, "user_registrations", {
+      guild_id: guildId,
+      letterboxd_username: username,
+    });
   }
 
   async function listForGuild(guildId: string) {
-    const ref = firestore
-      .collection("guilds")
-      .doc(guildId)
-      .collection("user-registrations")
-      .withConverter(converter)
-
-    const snapshot = await ref.get()
-
-    return snapshot.docs.map((doc) => doc.data())
+    return await query<UserRegistration>(db, "user_registrations", {
+      guild_id: guildId,
+    });
   }
 
-  return { save, get, listForGuild, listForLetterboxdUsername }
-}
-
-const converter: FirestoreDataConverter<UserRegistration> = {
-  toFirestore(registration: UserRegistration) {
-    return {
-      ...registration,
-      createdAt: Timestamp.fromDate(registration.createdAt),
-    }
-  },
-  fromFirestore(snapshot) {
-    const data = snapshot.data()
-    return {
-      letterboxdUsername: data.letterboxdUsername,
-      discordUserId: data.discordUserId,
-      discordGuildId: data.discordGuildId,
-      createdAt: data.createdAt.toDate(),
-    } as UserRegistration
-  },
+  return { save, get, listForGuild, listForLetterboxdUsername };
 }

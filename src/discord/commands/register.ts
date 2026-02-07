@@ -8,7 +8,7 @@ import {
   InteractionType,
 } from "discord-api-types/v10"
 import { useLetterboxdFeeds } from "../../letterboxd/feeds"
-import { useUserService } from "../../users"
+import { UserService } from "../../users"
 
 export type RegisterCommandInteraction = APIBaseInteraction<
   InteractionType.ApplicationCommand,
@@ -20,10 +20,8 @@ type RegisterCommandOption = APIInteractionDataOptionBase<
   "string"
 >
 
-export function useRegisterCommand({
-  users = useUserService(),
-  feeds = useLetterboxdFeeds(),
-} = {}) {
+export function useRegisterCommand({ users }: { users: UserService }) {
+  const feeds = useLetterboxdFeeds()
   const definition = {
     name: "register",
     description: "Link your Letterboxd account to your discord account",

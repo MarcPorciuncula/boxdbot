@@ -7,22 +7,29 @@ import { filter, flatMap, map } from "ix/asynciterable/operators/index"
 import { toMarkdown } from "mdast-util-to-markdown"
 import { ascend, sort } from "ramda"
 import { SKIP, visit } from "unist-util-visit"
-import { useDiscordClient } from "../discord/client"
-import { useGuildConfigRepository } from "../guild-config/repository"
+import { DiscordClient } from "../discord/client"
+import { GuildConfigRepository } from "../guild-config/repository"
 import { useLetterboxdFeeds } from "../letterboxd/feeds"
 import { Review, parseReviews } from "../letterboxd/reviews"
-import { useUserService } from "../users"
+import { UserService } from "../users"
 import { UserRegistration } from "../users/repository"
-import { usePostsRepository } from "./posts"
-import { logger } from "firebase-functions"
+import { PostsRepository } from "./posts"
+
+export type PostReviewsService = ReturnType<typeof usePostReviews>;
 
 export function usePostReviews({
-  userService = useUserService(),
-  posts = usePostsRepository(),
-  discord = useDiscordClient(),
-  configs = useGuildConfigRepository(),
-  feeds = useLetterboxdFeeds(),
-} = {}) {
+  userService,
+  posts,
+  discord,
+  configs,
+}: {
+  userService: UserService;
+  posts: PostsRepository;
+  discord: DiscordClient;
+  configs: GuildConfigRepository;
+}) {
+  const feeds = useLetterboxdFeeds()
+
   function buildContent(review: Review, user: UserRegistration) {
     const hast = fromHtml(review.content)
     const mdast = toMdast(hast)
@@ -205,7 +212,7 @@ export function usePostReviews({
       try {
         await postReview(guildId, config.channelId, user, review)
       } catch (err) {
-        logger.error(err)
+        console.error(err)
       }
     }
 

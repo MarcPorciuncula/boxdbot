@@ -1,6 +1,3 @@
-import { defineString } from "firebase-functions/params"
-import { once } from "ramda"
-
 export class DiscordClient {
   basepath = "https://discord.com/api/v10"
   token: string
@@ -83,9 +80,3 @@ class APIRequestError extends Error {
     )
   }
 }
-
-const DISCORD_BOT_TOKEN = defineString("DISCORD_BOT_TOKEN")
-
-export const useDiscordClient = once(
-  () => new DiscordClient(DISCORD_BOT_TOKEN.value()),
-)

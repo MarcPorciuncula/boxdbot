@@ -6,10 +6,10 @@ import {
   InteractionResponseType,
   InteractionType,
 } from "discord-api-types/v10"
-import { useGuildConfigRepository } from "../../guild-config/repository"
+import { GuildConfigRepository } from "../../guild-config/repository"
 import { parse, startOfDay } from "date-fns"
 
-type SetupCommandInteraction = APIBaseInteraction<
+export type SetupCommandInteraction = APIBaseInteraction<
   InteractionType.ApplicationCommand,
   { options: SetupCommandOption[] }
 >
@@ -25,8 +25,10 @@ type SetupCommandOption =
     >
 
 export function useSetupCommand({
-  guildConfigs = useGuildConfigRepository(),
-} = {}) {
+  guildConfigs,
+}: {
+  guildConfigs: GuildConfigRepository;
+}) {
   const definition = {
     name: "setup-feed",
     description:

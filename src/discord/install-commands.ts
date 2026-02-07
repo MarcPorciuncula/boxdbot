@@ -1,19 +1,24 @@
-import { logger } from "firebase-functions"
-import { defineString } from "firebase-functions/params"
-import { useDiscordClient } from "./client"
+import { DiscordClient } from "./client"
 import { useCommands } from "./commands"
-
-const DISCORD_APP_ID = defineString("DISCORD_APP_ID")
+import { UserService } from "../users";
+import { GuildConfigRepository } from "../guild-config/repository";
 
 export function useInstallCommands({
-  client = useDiscordClient(),
-  appId = DISCORD_APP_ID.value(),
-  commands = useCommands(),
-} = {}) {
+  discordClient,
+  userService,
+  guildConfigs,
+  appId,
+}: {
+  discordClient: DiscordClient;
+  userService: UserService;
+  guildConfigs: GuildConfigRepository;
+  appId: string;
+}) {
   return async function installCommands() {
+    const commands = useCommands({ userService, guildConfigs })
     const definitions = commands.map((command) => command.definition)
 
-    await client.request(`/applications/${appId}/commands`, {
+    await discordClient.request(`/applications/${appId}/commands`, {
       method: "PUT",
       body: definitions,
     })

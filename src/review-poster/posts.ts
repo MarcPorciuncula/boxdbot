@@ -1,56 +1,41 @@
-import {
-  FirestoreDataConverter,
-  Timestamp,
-  getFirestore,
-} from "firebase-admin/firestore"
+import { ensureTable } from "../db/init";
+import { getDocument, setDocument } from "../db/repository";
 
 export type Post = {
-  guildId: string
-  userId: string
-  createdAt: Date
-  reviewId: string
-}
+  guildId: string;
+  userId: string;
+  createdAt: Date;
+  reviewId: string;
+};
 
-export function usePostsRepository({ firestore = getFirestore() } = {}) {
+export type PostsRepository = Awaited<ReturnType<typeof usePostsRepository>>;
+
+export async function usePostsRepository({ db }: { db: D1Database }) {
+  await ensureTable(db, "posts", {
+    columns: [
+      { name: "guild_id", type: "TEXT" },
+      { name: "review_id", type: "TEXT" },
+      { name: "value", type: "TEXT", notNull: true },
+    ],
+    primaryKey: ["guild_id", "review_id"],
+  });
+
   async function save(post: Post) {
-    const collection = firestore
-      .collection("guilds")
-      .doc(post.guildId)
-      .collection("posts")
-      .withConverter(converter)
-
-    await collection.doc(post.reviewId).set(post)
-
-    return post
+    await setDocument(
+      db,
+      "posts",
+      { guild_id: post.guildId, review_id: post.reviewId },
+      post
+    );
+    return post;
   }
 
   async function get(guildId: string, reviewId: string) {
-    const collection = firestore
-      .collection("guilds")
-      .doc(guildId)
-      .collection("posts")
-      .withConverter(converter)
-
-    const snapshot = await collection.doc(reviewId).get()
-
-    return snapshot.data() ?? null
+    return await getDocument<Post>(db, "posts", {
+      guild_id: guildId,
+      review_id: reviewId,
+    });
   }
 
-  return { save, get }
-}
-
-const converter: FirestoreDataConverter<Post> = {
-  toFirestore(post: Post) {
-    return {
-      ...post,
-      createdAt: Timestamp.fromDate(post.createdAt),
-    }
-  },
-  fromFirestore(snapshot) {
-    const data = snapshot.data()
-    return {
-      ...data,
-      createdAt: data.createdAt.toDate(),
-    } as Post
-  },
+  return { save, get };
 }

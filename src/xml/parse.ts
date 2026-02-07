@@ -4,7 +4,7 @@ import { XmlNode, create as createXmlReader } from "xml-reader"
 import debounce from "lodash.debounce"
 import { Readable } from "node:stream"
 import { ReadableStream } from "stream/web"
-import { TextDecoder } from "util"
+import { TextDecoder } from "node:util"
 
 export function parse(input: Readable | ReadableStream<Buffer>) {
   const reader = createXmlReader({
