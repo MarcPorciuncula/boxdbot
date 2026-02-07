@@ -1,10 +1,6 @@
 import { parse as parseDate } from "date-fns"
-import { Element, Text } from "hast"
-import { fromHtml } from "hast-util-from-html"
-import { AsyncIterable } from "ix"
 import { from } from "ix/asynciterable/index"
 import { filter, flatMap, map } from "ix/asynciterable/operators/index"
-import { visit } from "unist-util-visit"
 import { XmlNode } from "xml-reader"
 
 export function parseReviews(feed: AsyncIterable<XmlNode>) {
@@ -29,11 +25,9 @@ export function parseReviews(feed: AsyncIterable<XmlNode>) {
         return node.children.find((item) => item.name === name) ?? null
       }
 
-      const link = text(find("link"))
-
       return {
         id: text(find("guid")),
-        link,
+        link: text(find("link")),
         title: text(find("title")),
         rating: findMaybe("letterboxd:memberRating")
           ? parseRating(text(find("letterboxd:memberRating")))
@@ -56,7 +50,6 @@ export function parseReviews(feed: AsyncIterable<XmlNode>) {
           : null,
         content: text(find("description")),
         spoilers: text(find("title")).includes("(contains spoilers)"),
-        tags: await fetchTags(link),
       }
     }),
   )
@@ -74,47 +67,6 @@ function parseRating(rating: string) {
   return parseFloat(rating) * 2
 }
 
-async function fetchTags(link: string) {
-  const res = await fetch(link, { method: "GET" })
-
-  const body = await res.text()
-
-  if (!res.ok) {
-    throw new Error(
-      `Failed to fetch tags for review: ${res.statusText}\n` + body,
-    )
-  }
-
-  const hast = fromHtml(body)
-
-  const tags: string[] = []
-
-  visit(hast, "element", (node, index, parent) => {
-    if (node.tagName !== "ul") return
-    if (!(node.properties.className as string[])?.includes("tags")) return
-
-    for (const li of node.children.filter(
-      (child): child is Element =>
-        child.type === "element" && child.tagName === "li",
-    )) {
-      for (const a of li.children.filter(
-        (child): child is Element =>
-          child.type === "element" && child.tagName === "a",
-      )) {
-        const text = a.children.find(
-          (node): node is Text => node.type === "text",
-        )?.value
-
-        if (text) {
-          tags.push(text)
-        }
-      }
-    }
-  })
-
-  return tags
-}
-
 export type Review = {
   link: string
   id: string
@@ -128,5 +80,4 @@ export type Review = {
   tmdbMovieId: string | null
   content: string
   spoilers: boolean
-  tags: string[]
 }

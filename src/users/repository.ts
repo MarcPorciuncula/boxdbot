@@ -9,7 +9,6 @@ export type UserRegistration = {
   discordUserId: string
   discordGuildId: string
   createdAt: Date
-  filterTag: string | null
 }
 
 export function useUserRepository({ firestore = getFirestore() } = {}) {
@@ -82,8 +81,9 @@ const converter: FirestoreDataConverter<UserRegistration> = {
   fromFirestore(snapshot) {
     const data = snapshot.data()
     return {
-      ...data,
-      filterTag: data.filterTag ?? null,
+      letterboxdUsername: data.letterboxdUsername,
+      discordUserId: data.discordUserId,
+      discordGuildId: data.discordGuildId,
       createdAt: data.createdAt.toDate(),
     } as UserRegistration
   },

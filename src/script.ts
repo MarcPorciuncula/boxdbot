@@ -1,19 +1,17 @@
 import "dotenv/config"
-import { initializeApp } from "firebase-admin/app"
-import { usePostReviews } from "./review-poster"
-import { useLetterboxdFeeds } from "./letterboxd/feeds"
-import { parseReviews } from "./letterboxd/reviews"
-initializeApp()
 
-const feeds = useLetterboxdFeeds()
+const username = "kalpal"
 
 async function run() {
-  const res = await feeds.get("kalpal")
-  if (!res) return
-  for await (const review of parseReviews(res.feed)) {
-    console.log(review.title, review.tags)
-    break
+  const res = await fetch(
+    `https://letterboxd.com/${encodeURIComponent(username)}/rss/`,
+  )
+  if (res.status === 404) {
+    console.error("Feed not found")
+    return
   }
+  const raw = await res.text()
+  console.log(raw)
 }
 
 run().catch((err) => {

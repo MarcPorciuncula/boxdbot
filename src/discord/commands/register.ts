@@ -35,12 +35,6 @@ export function useRegisterCommand({
         required: true,
         type: ApplicationCommandOptionType.String,
       },
-      {
-        name: "filter-tag",
-        description: "Filter reviews to post based on a tag",
-        required: false,
-        type: ApplicationCommandOptionType.String,
-      },
     ],
   }
 
@@ -73,16 +67,11 @@ export function useRegisterCommand({
       } satisfies APIInteractionResponse
     }
 
-    const filterTag = interaction.data!.options.find(
-      (item) => item.name === "filter-tag",
-    )?.value
-
     try {
       await users.register({
         letterboxdUsername: username,
         discordUserId: interaction.member.user.id,
         discordGuildId: interaction.guild_id,
-        filterTag: filterTag || null,
       })
     } catch (err: any) {
       if (err.message.match(/username already registered/i)) {
