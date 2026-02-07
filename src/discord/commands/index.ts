@@ -1,5 +1,6 @@
 import { useSetupCommand } from "./setup"
 import { useRegisterCommand } from "./register"
+import { useUnregisterCommand } from "./unregister"
 import { UserService } from "../../users"
 import { GuildConfigRepository } from "../../guild-config/repository"
 
@@ -11,6 +12,7 @@ export function useCommands({
   guildConfigs: GuildConfigRepository;
 }) {
   const register = useRegisterCommand({ users: userService })
+  const unregister = useUnregisterCommand({ users: userService })
   const setup = useSetupCommand({ guildConfigs })
-  return [register, setup]
+  return [register, unregister, setup]
 }

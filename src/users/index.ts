@@ -20,5 +20,13 @@ export function useUserService({ repository }: { repository: UserRepository }) {
     return await repository.save(registration)
   }
 
-  return { register, listForGuild: repository.listForGuild }
+  async function unregister(guildId: string, userId: string) {
+    const existing = await repository.get(guildId, userId)
+    if (!existing) {
+      throw new Error("User not registered")
+    }
+    return await repository.remove(guildId, userId)
+  }
+
+  return { register, unregister, listForGuild: repository.listForGuild }
 }

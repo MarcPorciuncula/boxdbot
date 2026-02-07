@@ -1,5 +1,5 @@
 import { ensureTable } from "../db/init";
-import { getDocument, setDocument } from "../db/repository";
+import { createStore } from "../db/store";
 
 export type Post = {
   guildId: string;
@@ -20,18 +20,15 @@ export async function usePostsRepository({ db }: { db: D1Database }) {
     primaryKey: ["guild_id", "review_id"],
   });
 
+  const store = createStore<Post>(db, "posts");
+
   async function save(post: Post) {
-    await setDocument(
-      db,
-      "posts",
-      { guild_id: post.guildId, review_id: post.reviewId },
-      post
-    );
+    await store.set({ guild_id: post.guildId, review_id: post.reviewId }, post);
     return post;
   }
 
   async function get(guildId: string, reviewId: string) {
-    return await getDocument<Post>(db, "posts", {
+    return await store.get({
       guild_id: guildId,
       review_id: reviewId,
     });

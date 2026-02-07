@@ -1,5 +1,5 @@
 import { ensureTable } from "../db/init";
-import { getDocument, setDocument, query } from "../db/repository";
+import { createStore } from "../db/store";
 
 export type GuildConfig = {
   guildId: string;
@@ -18,19 +18,21 @@ export async function useGuildConfigRepository({ db }: { db: D1Database }) {
     ],
   });
 
+  const store = createStore<GuildConfig>(db, "guild_configs");
+
   async function save(config: GuildConfig) {
-    await setDocument(db, "guild_configs", { guild_id: config.guildId }, config);
+    await store.set({ guild_id: config.guildId }, config);
     return config;
   }
 
   async function get(guildId: string) {
-    return await getDocument<GuildConfig>(db, "guild_configs", {
+    return await store.get({
       guild_id: guildId,
     });
   }
 
   async function list() {
-    return await query<GuildConfig>(db, "guild_configs");
+    return await store.query();
   }
 
   async function update(guildId: string, data: Partial<GuildConfig>) {

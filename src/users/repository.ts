@@ -1,5 +1,5 @@
 import { ensureTable } from "../db/init";
-import { getDocument, setDocument, query } from "../db/repository";
+import { createStore } from "../db/store";
 
 export type UserRegistration = {
   letterboxdUsername: string;
@@ -24,15 +24,15 @@ export async function useUserRepository({ db }: { db: D1Database }) {
     ],
   });
 
+  const store = createStore<UserRegistration>(db, "user_registrations");
+
   async function save(init: Omit<UserRegistration, "createdAt">) {
     const doc: UserRegistration = {
       ...init,
       createdAt: new Date(),
     };
 
-    await setDocument(
-      db,
-      "user_registrations",
+    await store.set(
       { guild_id: doc.discordGuildId, user_id: doc.discordUserId },
       doc,
       { letterboxd_username: doc.letterboxdUsername }
@@ -42,24 +42,31 @@ export async function useUserRepository({ db }: { db: D1Database }) {
   }
 
   async function get(guildId: string, userId: string) {
-    return await getDocument<UserRegistration>(db, "user_registrations", {
+    return await store.get({
       guild_id: guildId,
       user_id: userId,
     });
   }
 
   async function listForLetterboxdUsername(guildId: string, username: string) {
-    return await query<UserRegistration>(db, "user_registrations", {
+    return await store.query({
       guild_id: guildId,
       letterboxd_username: username,
     });
   }
 
   async function listForGuild(guildId: string) {
-    return await query<UserRegistration>(db, "user_registrations", {
+    return await store.query({
       guild_id: guildId,
     });
   }
 
-  return { save, get, listForGuild, listForLetterboxdUsername };
+  async function remove(guildId: string, userId: string) {
+    await store.delete({
+      guild_id: guildId,
+      user_id: userId,
+    });
+  }
+
+  return { save, get, listForGuild, listForLetterboxdUsername, remove };
 }
