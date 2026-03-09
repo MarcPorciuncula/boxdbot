@@ -7,6 +7,7 @@ import {
   InteractionResponseType,
   InteractionType,
 } from "discord-api-types/v10"
+import { GuildConfigRepository } from "../../guild-config/repository"
 import { useLetterboxdFeeds } from "../../letterboxd/feeds"
 import { captureException, logger } from "../../logger"
 import { UserService } from "../../users"
@@ -21,7 +22,13 @@ type RegisterCommandOption = APIInteractionDataOptionBase<
   "string"
 >
 
-export function useRegisterCommand({ users }: { users: UserService }) {
+export function useRegisterCommand({
+  users,
+  guildConfigs,
+}: {
+  users: UserService;
+  guildConfigs: GuildConfigRepository;
+}) {
   const feeds = useLetterboxdFeeds()
   const definition = {
     name: "register",
@@ -101,10 +108,18 @@ export function useRegisterCommand({ users }: { users: UserService }) {
       letterboxdUsername: username,
     })
 
+    const config = await guildConfigs.get(interaction.guild_id)
+    let content = `<@${interaction.member.user.id}> linked their Letterboxd account: ${sanitize(username)}`
+
+    if (!config) {
+      content +=
+        "\n\n⚠️ **Note:** The Letterboxd feed hasn't been set up for this server yet. An admin needs to run `/setup-feed` for reviews to start appearing!"
+    }
+
     return {
       type: InteractionResponseType.ChannelMessageWithSource,
       data: {
-        content: `<@${interaction.member.user.id}> linked their Letterboxd account: ${sanitize(username)}`,
+        content,
       },
     } satisfies APIInteractionResponse
   }

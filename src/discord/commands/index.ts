@@ -11,7 +11,7 @@ export function useCommands({
   userService: UserService;
   guildConfigs: GuildConfigRepository;
 }) {
-  const register = useRegisterCommand({ users: userService })
+  const register = useRegisterCommand({ users: userService, guildConfigs })
   const unregister = useUnregisterCommand({ users: userService })
   const setup = useSetupCommand({ guildConfigs })
   return [register, unregister, setup]
