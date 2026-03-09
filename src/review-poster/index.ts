@@ -128,14 +128,6 @@ export function usePostReviews({
         type: "paragraph",
         children: [
           {
-            type: "text",
-            value: "---\n",
-          },
-          {
-            type: "text",
-            value: "<",
-          },
-          {
             type: "link",
             url: review.link,
             children: [
@@ -144,10 +136,6 @@ export function usePostReviews({
                 value: `Posted on ${format(review.publishedDate, "yyyy-MM-dd")}`,
               },
             ],
-          },
-          {
-            type: "text",
-            value: ">",
           },
         ],
       })
