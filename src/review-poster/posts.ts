@@ -3,6 +3,8 @@ import { createStore } from "../db/store";
 
 export type Post = {
   guildId: string;
+  channelId: string;
+  messageId: string;
   userId: string;
   createdAt: Date;
   reviewId: string;
@@ -15,6 +17,8 @@ export async function usePostsRepository({ db }: { db: D1Database }) {
     columns: [
       { name: "guild_id", type: "TEXT" },
       { name: "review_id", type: "TEXT" },
+      { name: "channel_id", type: "TEXT" },
+      { name: "message_id", type: "TEXT" },
       { name: "value", type: "TEXT", notNull: true },
     ],
     primaryKey: ["guild_id", "review_id"],

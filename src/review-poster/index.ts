@@ -152,17 +152,22 @@ export function usePostReviews({
     user: UserRegistration,
     review: Review,
   ) {
-    await discord.request(`/channels/${channelId}/messages`, {
-      method: "POST",
-      body: {
-        content: buildContent(review, user),
+    const res = await discord.request<{ id: string }>(
+      `/channels/${channelId}/messages`,
+      {
+        method: "POST",
+        body: {
+          content: buildContent(review, user),
+        },
       },
-    })
+    )
 
     await posts.save({
       userId: user.discordUserId,
       reviewId: review.id,
       guildId: guildId,
+      channelId: channelId,
+      messageId: res.id,
       createdAt: new Date(),
     })
   }
