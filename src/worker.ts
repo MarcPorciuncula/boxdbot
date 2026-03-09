@@ -79,6 +79,6 @@ export default {
       discord: resolved.discordClient,
       configs: resolved.guildConfigRepo,
     });
-    await postReviews.runPeriodicSync();
+    ctx.waitUntil(postReviews.runPeriodicSync());
   },
 };

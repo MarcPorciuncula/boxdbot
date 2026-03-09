@@ -10,6 +10,10 @@ export function useLetterboxdFeeds() {
       return null
     }
 
+    if (!res.ok) {
+      throw new Error(`Letterboxd feed error for ${username}: HTTP ${res.status}`)
+    }
+
     if (!res.body) {
       throw new Error("Missing response body")
     }

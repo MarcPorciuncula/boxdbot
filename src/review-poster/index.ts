@@ -215,16 +215,16 @@ export function usePostReviews({
         console.error(err)
       }
     }
-
-    await configs.update(config.guildId, {
-      startAt: new Date(),
-    })
   }
 
   async function runPeriodicSync() {
     const guilds = await configs.list()
     for (const guild of guilds) {
-      await postReviewsForGuild(guild.guildId)
+      try {
+        await postReviewsForGuild(guild.guildId)
+      } catch (err) {
+        console.error(`[boxdbot] sync failed for guild ${guild.guildId}:`, err)
+      }
     }
   }
 
