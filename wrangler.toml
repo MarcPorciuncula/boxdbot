@@ -2,6 +2,7 @@ name = "boxdbot"
 main = "src/worker.ts"
 compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
+upload_source_maps = true
 
 [[d1_databases]]
 binding = "DB"
@@ -19,6 +20,7 @@ crons = ["*/15 * * * *"]
 DISCORD_APP_ID = ""
 DISCORD_PUBLIC_KEY = ""
 SENTRY_DSN = ""
+SENTRY_RELEASE = ""
 
 [observability]
 [observability.logs]

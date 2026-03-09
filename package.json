@@ -33,6 +33,7 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@sentry/cli": "^2.58.5",
     "@tsconfig/node22": "^22.0.0",
     "@types/hast": "^3.0.4",
     "@types/lodash.debounce": "^4.0.9",

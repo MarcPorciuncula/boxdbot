@@ -43,12 +43,25 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
-          command: deploy
+          command: deploy --outdir .wrangler/dist --upload-source-maps
           vars: |
             DISCORD_APP_ID
             DISCORD_PUBLIC_KEY
             SENTRY_DSN
+            SENTRY_RELEASE
         env:
           DISCORD_APP_ID: ${{ vars.DISCORD_APP_ID }}
           DISCORD_PUBLIC_KEY: ${{ vars.DISCORD_PUBLIC_KEY }}
           SENTRY_DSN: ${{ vars.SENTRY_DSN }}
+          SENTRY_RELEASE: ${{ github.sha }}
+
+      - name: Upload source maps to Sentry
+        run: |
+          npx sentry-cli releases new "${{ github.sha }}"
+          npx sentry-cli sourcemaps inject .wrangler/dist
+          npx sentry-cli sourcemaps upload --release "${{ github.sha }}" .wrangler/dist
+          npx sentry-cli releases finalize "${{ github.sha }}"
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ vars.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
