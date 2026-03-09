@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import * as Sentry from "@sentry/cloudflare";
 import { verify } from "./discord/webhook/verify";
 import { useHandleInteraction } from "./discord/webhook/handle-interaction";
 import { useInstallCommands } from "./discord/install-commands";
@@ -69,16 +70,24 @@ app.post("/discord/webhook/interactions", async (c) => {
   return c.json(result);
 });
 
-export default {
-  fetch: app.fetch,
-  async scheduled(event: any, env: Env, ctx: any) {
-    const resolved = await resolveContext(env);
-    const postReviews = usePostReviews({
-      userService: resolved.userService,
-      posts: resolved.postsRepo,
-      discord: resolved.discordClient,
-      configs: resolved.guildConfigRepo,
-    });
-    ctx.waitUntil(postReviews.runPeriodicSync());
+export default Sentry.withSentry(
+  (env: Env) => ({
+    dsn: env.SENTRY_DSN,
+    tracesSampleRate: 1.0,
+    sendDefaultPii: true,
+    enableLogs: true,
+  }),
+  {
+    fetch: app.fetch,
+    async scheduled(event: any, env: Env, ctx: any) {
+      const resolved = await resolveContext(env);
+      const postReviews = usePostReviews({
+        userService: resolved.userService,
+        posts: resolved.postsRepo,
+        discord: resolved.discordClient,
+        configs: resolved.guildConfigRepo,
+      });
+      ctx.waitUntil(postReviews.runPeriodicSync());
+    },
   },
-};
+);

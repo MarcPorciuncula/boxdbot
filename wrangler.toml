@@ -12,12 +12,13 @@ database_id = "a00292b5-e893-4103-aa4e-da5db3f30f9c"
 crons = ["*/15 * * * *"]
 
 [vars]
-# DISCORD_APP_ID and DISCORD_PUBLIC_KEY are defined as keys here
-# so that `wrangler types` can generate the correct Env interface.
-# The actual values are provided via GitHub Actions secrets/vars
-# during deployment, or via .dev.vars during local development.
+# These vars are defined with empty values so that `wrangler types`
+# can generate the correct Env interface. Actual values are provided
+# via GitHub Actions secrets/vars during deployment, or via .dev.vars
+# during local development.
 DISCORD_APP_ID = ""
 DISCORD_PUBLIC_KEY = ""
+SENTRY_DSN = ""
 
 [observability]
 [observability.logs]

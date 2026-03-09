@@ -4,6 +4,7 @@ import {
   InteractionType,
 } from "discord-api-types/v10"
 import { useCommands } from "../commands"
+import { logger } from "../../logger"
 import { UserService } from "../../users"
 import { GuildConfigRepository } from "../../guild-config/repository"
 
@@ -16,7 +17,7 @@ export function useHandleInteraction({
 }) {
   const commands = useCommands({ userService, guildConfigs })
   return async (interaction: APIBaseInteraction<InteractionType, any>) => {
-    console.debug("Handling interaction", interaction)
+    logger.debug("Handling interaction", { type: interaction.type })
 
     switch (interaction.type) {
       case InteractionType.ApplicationCommand:
@@ -25,7 +26,7 @@ export function useHandleInteraction({
         )
         if (command) {
           const res = await command.handler(interaction as any)
-          console.debug("Responding to interaction", res)
+          logger.debug("Responding to interaction", { type: res.type })
           return res
         }
         break

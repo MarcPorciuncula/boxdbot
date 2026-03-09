@@ -11,6 +11,7 @@ import { DiscordClient } from "../discord/client"
 import { GuildConfigRepository } from "../guild-config/repository"
 import { useLetterboxdFeeds } from "../letterboxd/feeds"
 import { Review, parseReviews } from "../letterboxd/reviews"
+import { captureException, logger, withContext } from "../logger"
 import { UserService } from "../users"
 import { UserRegistration } from "../users/repository"
 import { PostsRepository } from "./posts"
@@ -184,6 +185,7 @@ export function usePostReviews({
       throw new Error(`Config not found for guild ${guildId}`)
     }
     const users = await userService.listForGuild(guildId)
+    logger.debug("Syncing guild", { userCount: users.length })
 
     const reviews = await toArray(
       from(users).pipe(
@@ -210,21 +212,27 @@ export function usePostReviews({
     for (const { review, user } of sorted) {
       if (await posts.get(guildId, review.id)) continue
       try {
+        logger.debug("Posting review", { reviewId: review.id, letterboxdUsername: user.letterboxdUsername })
         await postReview(guildId, config.channelId, user, review)
+        logger.info("Posted review", { reviewId: review.id, letterboxdUsername: user.letterboxdUsername })
       } catch (err) {
-        console.error(err)
+        captureException(err)
       }
     }
   }
 
   async function runPeriodicSync() {
     const guilds = await configs.list()
+    logger.info("Starting periodic sync", { guildCount: guilds.length })
     for (const guild of guilds) {
-      try {
-        await postReviewsForGuild(guild.guildId)
-      } catch (err) {
-        console.error(`[boxdbot] sync failed for guild ${guild.guildId}:`, err)
-      }
+      await withContext({ guildId: guild.guildId }, async () => {
+        try {
+          await postReviewsForGuild(guild.guildId)
+        } catch (err) {
+          logger.error("Sync failed for guild")
+          captureException(err)
+        }
+      })
     }
   }
 

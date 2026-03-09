@@ -47,6 +47,8 @@ jobs:
           vars: |
             DISCORD_APP_ID
             DISCORD_PUBLIC_KEY
+            SENTRY_DSN
         env:
           DISCORD_APP_ID: ${{ vars.DISCORD_APP_ID }}
           DISCORD_PUBLIC_KEY: ${{ vars.DISCORD_PUBLIC_KEY }}
+          SENTRY_DSN: ${{ vars.SENTRY_DSN }}

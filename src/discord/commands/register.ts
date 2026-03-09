@@ -8,6 +8,7 @@ import {
   InteractionType,
 } from "discord-api-types/v10"
 import { useLetterboxdFeeds } from "../../letterboxd/feeds"
+import { captureException, logger } from "../../logger"
 import { UserService } from "../../users"
 
 export type RegisterCommandInteraction = APIBaseInteraction<
@@ -73,6 +74,10 @@ export function useRegisterCommand({ users }: { users: UserService }) {
       })
     } catch (err: any) {
       if (err.message.match(/username already registered/i)) {
+        logger.warn("Registration conflict: username already registered", {
+          guildId: interaction.guild_id,
+          letterboxdUsername: username,
+        })
         return {
           type: InteractionResponseType.ChannelMessageWithSource,
           data: {
@@ -81,6 +86,7 @@ export function useRegisterCommand({ users }: { users: UserService }) {
         } satisfies APIInteractionResponse
       }
 
+      captureException(err)
       return {
         type: InteractionResponseType.ChannelMessageWithSource,
         data: {
@@ -88,6 +94,12 @@ export function useRegisterCommand({ users }: { users: UserService }) {
         },
       } satisfies APIInteractionResponse
     }
+
+    logger.info("User registered Letterboxd account", {
+      guildId: interaction.guild_id,
+      discordUserId: interaction.member.user.id,
+      letterboxdUsername: username,
+    })
 
     return {
       type: InteractionResponseType.ChannelMessageWithSource,
