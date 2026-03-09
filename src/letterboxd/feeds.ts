@@ -1,3 +1,4 @@
+import { from } from "ix/Ix.asynciterable"
 import { parse } from "../xml/parse"
 
 export function useLetterboxdFeeds() {
@@ -18,7 +19,7 @@ export function useLetterboxdFeeds() {
       throw new Error("Missing response body")
     }
 
-    return { username, feed: parse(res.body) }
+    return { username, feed: parse(from(res.body)) }
   }
 
   return { get }

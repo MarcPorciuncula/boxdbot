@@ -2,11 +2,9 @@ import { from } from "ix/asynciterable/index"
 import { flatMap } from "ix/asynciterable/operators/index"
 import { XmlNode, create as createXmlReader } from "xml-reader"
 import debounce from "lodash.debounce"
-import { Readable } from "node:stream"
-import { ReadableStream } from "stream/web"
 import { TextDecoder } from "node:util"
 
-export function parse(input: Readable | ReadableStream<Buffer>) {
+export function parse(input: AsyncIterable<Uint8Array | Buffer>) {
   const reader = createXmlReader({
     stream: true,
     parentNodes: false,
@@ -16,7 +14,7 @@ export function parse(input: Readable | ReadableStream<Buffer>) {
   const decoder = new TextDecoder("utf-8")
 
   return from(input).pipe(
-    flatMap((chunk: Buffer | Uint8Array, i) => {
+    flatMap((chunk: Buffer | Uint8Array) => {
       return new Promise<XmlNode[]>((resolve) => {
         let cancelled = false
         const tags: XmlNode[] = []

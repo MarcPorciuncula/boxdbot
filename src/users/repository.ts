@@ -61,6 +61,10 @@ export async function useUserRepository({ db }: { db: D1Database }) {
     });
   }
 
+  async function listAll() {
+    return await store.query();
+  }
+
   async function remove(guildId: string, userId: string) {
     await store.delete({
       guild_id: guildId,
@@ -68,5 +72,5 @@ export async function useUserRepository({ db }: { db: D1Database }) {
     });
   }
 
-  return { save, get, listForGuild, listForLetterboxdUsername, remove };
+  return { save, get, listForGuild, listForLetterboxdUsername, listAll, remove };
 }

@@ -185,24 +185,47 @@ export function usePostReviews({
       throw new Error(`Config not found for guild ${guildId}`)
     }
     const users = await userService.listForGuild(guildId)
-    logger.debug("Syncing guild", { userCount: users.length })
+    logger.debug("Syncing guild", {
+      guildId,
+      userCount: users.length,
+      startAt: config.startAt.toISOString(),
+      channelId: config.channelId,
+    })
 
     const reviews = await toArray(
       from(users).pipe(
-        flatMap((user) =>
-          feeds
-            .get(user.letterboxdUsername)
-            .then((result) => (result ? { feed: result.feed, user } : null)),
-        ),
+        flatMap((user) => {
+          logger.debug("Fetching feed", { letterboxdUsername: user.letterboxdUsername })
+          return feeds.get(user.letterboxdUsername).then((result) => {
+            if (!result) {
+              logger.warn("Feed not found", { letterboxdUsername: user.letterboxdUsername })
+              return null
+            }
+            return { feed: result.feed, user }
+          })
+        }),
         filter((item): item is NonNullable<typeof item> => item !== null),
         flatMap((item) =>
           parseReviews(item.feed).pipe(
             map((review) => ({ review, user: item.user })),
           ),
         ),
-        filter((item) => isAfter(item.review.publishedDate, config.startAt)),
+        filter((item) => {
+          const passes = isAfter(item.review.publishedDate, config.startAt)
+          if (!passes) {
+            logger.debug("Review before startAt, skipping", {
+              reviewId: item.review.id,
+              letterboxdUsername: item.user.letterboxdUsername,
+              publishedDate: item.review.publishedDate.toISOString(),
+              startAt: config.startAt.toISOString(),
+            })
+          }
+          return passes
+        }),
       ),
     )
+
+    logger.debug("Reviews collected after date filter", { guildId, reviewCount: reviews.length })
 
     const sorted = sort(
       ascend((item) => item.review.publishedDate),
@@ -210,7 +233,14 @@ export function usePostReviews({
     )
 
     for (const { review, user } of sorted) {
-      if (await posts.get(guildId, review.id)) continue
+      const alreadyPosted = await posts.get(guildId, review.id)
+      if (alreadyPosted) {
+        logger.debug("Review already posted, skipping", {
+          reviewId: review.id,
+          letterboxdUsername: user.letterboxdUsername,
+        })
+        continue
+      }
       try {
         logger.debug("Posting review", { reviewId: review.id, letterboxdUsername: user.letterboxdUsername })
         await postReview(guildId, config.channelId, user, review)

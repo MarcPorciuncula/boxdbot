@@ -34,5 +34,9 @@ export async function usePostsRepository({ db }: { db: D1Database }) {
     });
   }
 
-  return { save, get };
+  async function list(guildId?: string) {
+    return await store.query(guildId ? { guild_id: guildId } : {});
+  }
+
+  return { save, get, list };
 }
